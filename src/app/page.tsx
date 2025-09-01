@@ -70,16 +70,12 @@ export default function Home() {
     try {
       switch (language) {
         case "javascript":
-          const sandboxedExecution = new Function(`
-            try {
-              (function() {
-                ${code}
-              })();
-            } catch (e) {
-              console.log('Error: ' + e.message);
-            }
-          `);
-          sandboxedExecution();
+          try {
+            // Using a sandboxed function to execute the code
+            new Function(code)();
+          } catch (e: any) {
+            capturedLogs.push(`Error: ${e.message}`);
+          }
           break;
         case "python":
           capturedLogs.push("Simulating Python execution...");
