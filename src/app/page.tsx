@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -71,8 +72,16 @@ export default function Home() {
       switch (language) {
         case "javascript":
           try {
-            // Using a sandboxed function to execute the code
-            new Function(code)();
+            const sandboxedExecution = new Function(`
+              try {
+                (function() {
+                  ${code}
+                })();
+              } catch(e) {
+                console.log('Execution Error: ' + e.message);
+              }
+            `);
+            sandboxedExecution();
           } catch (e: any) {
             capturedLogs.push(`Error: ${e.message}`);
           }
@@ -180,8 +189,8 @@ export default function Home() {
         onRun={handleRunCode}
         activeFile={activeFile}
       />
-      <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-hidden">
-        <div className="flex-1 flex flex-col gap-4 lg:w-3/5 min-w-0">
+      <main className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 overflow-hidden">
+        <div className="flex flex-col min-h-0 min-w-0">
           <Editor
             code={code}
             onCodeChange={setCode}
@@ -191,7 +200,7 @@ export default function Home() {
             isDetecting={isDetecting}
           />
         </div>
-        <div className="flex-1 flex flex-col gap-4 lg:w-2/5 min-w-0 h-full">
+        <div className="flex flex-col min-h-0 min-w-0">
           <OutputConsole output={output} />
         </div>
       </main>
