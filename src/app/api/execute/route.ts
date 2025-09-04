@@ -95,7 +95,7 @@ const languageConfigs: Record<string, LanguageConfig> = {
   },
   kotlin: {
     extension: '.kt',
-    command: '/home/aman/.sdkman/candidates/kotlin/current/bin/kotlinc',
+    command: 'kotlinc',
     args: (filePath: string, outputPath: string) => [filePath, '-include-runtime', '-d', outputPath],
     runCommand: 'java',
     runArgs: (jarPath: string) => ['-jar', jarPath],
