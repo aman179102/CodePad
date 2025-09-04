@@ -11,3 +11,5 @@ services:
         value: production
       - key: PORT
         value: 3000
+    healthCheckPath: /api/health
+    autoDeploy: false
