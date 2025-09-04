@@ -21,8 +21,6 @@ const languages = [
   'java',
   'c',
   'c++',
-  'c#',
-  'go',
   'rust',
   'php',
   'ruby',

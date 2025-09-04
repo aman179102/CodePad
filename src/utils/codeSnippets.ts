@@ -60,29 +60,6 @@ int main() {
     return 0;
 }`,
 
-  'c#': `using System;
-
-class Program {
-    static void Main() {
-        int a = 10, b = 20;
-        int sum = a + b;
-
-        Console.WriteLine("Hello C#!");
-        Console.WriteLine("Sum = " + sum);
-    }
-}`,
-
-  go: `package main
-
-import "fmt"
-
-func main() {
-    a, b := 10, 20
-    sum := a + b
-
-    fmt.Println("Hello Go!")
-    fmt.Println("Sum =", sum)
-}`,
 
   rust: `fn main() {
     let a = 10;

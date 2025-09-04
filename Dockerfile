@@ -29,21 +29,8 @@ RUN apt-get install -y openjdk-17-jdk
 # Install GCC/G++ for C/C++
 RUN apt-get install -y gcc g++
 
-# Install .NET 8 SDK
-RUN wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
-    dpkg -i packages-microsoft-prod.deb && \
-    apt-get update && \
-    apt-get install -y dotnet-sdk-8.0
-
-# Install Go
-RUN wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz && \
-    rm go1.21.5.linux-amd64.tar.gz
-ENV PATH=$PATH:/usr/local/go/bin
-
-# Install Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH=$PATH:/root/.cargo/bin
+# Install Rust via package manager (more stable for Alpine)
+RUN apt-get install -y rustc
 
 # Install PHP
 RUN apt-get install -y php-cli
@@ -78,19 +65,18 @@ RUN apk add --no-cache \
     R \
     bash \
     musl-dev \
-    libc6-compat
+    libc6-compat \
+    rust \
+    cargo
 
 # Copy language binaries from runtime-installer
-COPY --from=runtime-installer /usr/local/go /usr/local/go
-COPY --from=runtime-installer /root/.cargo /root/.cargo
 COPY --from=runtime-installer /opt/kotlinc /opt/kotlinc
-COPY --from=runtime-installer /usr/share/dotnet /usr/share/dotnet
 
 # Install TypeScript globally
 RUN npm install -g typescript tsx
 
 # Set environment variables
-ENV PATH=$PATH:/usr/local/go/bin:/root/.cargo/bin:/opt/kotlinc/bin:/usr/share/dotnet
+ENV PATH=$PATH:/opt/kotlinc/bin
 
 WORKDIR /app
 

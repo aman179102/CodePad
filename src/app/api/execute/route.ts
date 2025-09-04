@@ -61,20 +61,9 @@ const languageConfigs: Record<string, LanguageConfig> = {
   'c++': {
     extension: '.cpp',
     command: 'g++',
-    args: (filePath: string, outputPath: string) => [filePath, '-o', outputPath],
+    args: (filePath: string, outputPath: string) => [filePath, '-o', outputPath, '-std=c++14'],
     runCommand: (outputPath: string) => outputPath,
     needsCompilation: true,
-  },
-  'c#': {
-    extension: '.cs',
-    command: 'dotnet',
-    args: () => ['run'],
-    needsProject: true,
-  },
-  go: {
-    extension: '.go',
-    command: 'go',
-    args: (filePath: string) => ['run', filePath],
   },
   rust: {
     extension: '.rs',
@@ -270,7 +259,7 @@ export async function POST(request: NextRequest) {
         }
       } else {
         // Direct execution
-        const args = config.needsProject ? config.args() : config.args(filePath);
+        const args = config.args(filePath);
         result = await executeCommand(config.command, args, tempDir, input);
       }
       
