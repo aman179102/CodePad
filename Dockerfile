@@ -92,11 +92,11 @@ WORKDIR /app
 COPY package*.json ./
 COPY .npmrc ./
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy application code
+# Copy application code first
 COPY . .
+
+# Install dependencies (including dev dependencies for build)
+RUN npm ci --legacy-peer-deps
 
 # Build the application
 RUN npm run build
