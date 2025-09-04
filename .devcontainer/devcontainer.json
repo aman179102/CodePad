@@ -1,0 +1,40 @@
+{
+  "name": "CodePad Development Environment",
+  "image": "ubuntu:22.04",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.10"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17"
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.21"
+    },
+    "ghcr.io/devcontainers/features/rust:1": {},
+    "ghcr.io/devcontainers/features/php:1": {
+      "version": "8.1"
+    },
+    "ghcr.io/devcontainers/features/ruby:1": {
+      "version": "3.1"
+    },
+    "ghcr.io/devcontainers/features/dotnet:1": {
+      "version": "8.0"
+    }
+  },
+  "postCreateCommand": "apt-get update && apt-get install -y gcc g++ r-base && npm install --legacy-peer-deps",
+  "forwardPorts": [9002],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "remoteUser": "root"
+}
