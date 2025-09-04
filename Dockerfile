@@ -16,8 +16,8 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     lsb-release
 
-# Install Node.js 18
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+# Install Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs
 
 # Install Python3
@@ -65,7 +65,7 @@ ENV PATH=$PATH:/opt/kotlinc/bin
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Production stage
-FROM node:18-alpine as production
+FROM node:20-alpine as production
 
 # Install runtime dependencies only
 RUN apk add --no-cache \
