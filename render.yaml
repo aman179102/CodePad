@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: codepad
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    buildCommand: docker build -t codepad .
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
