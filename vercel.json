@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "src/app/api/execute/route.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

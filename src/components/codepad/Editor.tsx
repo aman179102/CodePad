@@ -14,7 +14,22 @@ interface EditorProps {
   isDetecting: boolean;
 }
 
-const languages = ["javascript", "python", "html", "typescript", "java", "c", "c++", "php", "c#", "golang", "rust"];
+const languages = [
+  'javascript',
+  'typescript',
+  'python',
+  'java',
+  'c',
+  'c++',
+  'c#',
+  'go',
+  'rust',
+  'php',
+  'ruby',
+  'kotlin',
+  'r',
+  'bash'
+];
 
 export default function Editor({
   code,

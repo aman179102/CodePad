@@ -5,26 +5,19 @@ import { useState, useEffect } from "react";
 import type { CodeFile } from "@/types";
 import { detectLanguageAction } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
+import { getSnippetForLanguage } from "@/utils/codeSnippets";
 
 import CodePadHeader from "@/components/codepad/Header";
 import Editor from "@/components/codepad/Editor";
 import OutputConsole from "@/components/codepad/Console";
+import InputPanel from "@/components/codepad/InputPanel";
+import MobileTabs from "@/components/codepad/MobileTabs";
 import { FileSaveDialog, FileOpenDialog } from "@/components/codepad/FileManagement";
 
-const defaultCode = `// Welcome to CodePad!
-// Click the run button to execute your code.
-// You can save your files locally.
-
-function greet(name) {
-  return "Hello, " + name + "!";
-}
-
-console.log(greet("World"));
-`;
-
 export default function Home() {
-  const [code, setCode] = useState<string>(defaultCode);
+  const [code, setCode] = useState<string>(getSnippetForLanguage("javascript"));
   const [output, setOutput] = useState<string[]>([]);
+  const [input, setInput] = useState<string>("");
   const [language, setLanguage] = useState<string>("javascript");
   const [files, setFiles] = useState<CodeFile[]>([]);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
@@ -49,60 +42,43 @@ export default function Home() {
     }
   }, [toast]);
 
-  const handleRunCode = () => {
-    setOutput([]);
-    const capturedLogs: string[] = [];
-    const oldLog = console.log;
-    console.log = (...args: any[]) => {
-      capturedLogs.push(
-        args.map((arg) => {
-          try {
-            if (typeof arg === 'object' && arg !== null) {
-              return JSON.stringify(arg, null, 2);
-            }
-            return String(arg);
-          } catch {
-            return String(arg);
-          }
-        }).join(" ")
-      );
-    };
-
+  const handleRunCode = async () => {
+    setOutput(['Executing code...']);
+    
     try {
-      switch (language) {
-        case "javascript":
-          try {
-            const sandboxedExecution = new Function(`
-              try {
-                (function() {
-                  ${code}
-                })();
-              } catch(e) {
-                console.log('Execution Error: ' + e.message);
-              }
-            `);
-            sandboxedExecution();
-          } catch (e: any) {
-            capturedLogs.push(`Error: ${e.message}`);
-          }
-          break;
-        case "python":
-          capturedLogs.push("Simulating Python execution...");
-          capturedLogs.push("This is a UI demo and does not actually run Python code.");
-          break;
-        default:
-          capturedLogs.push(`Execution for '${language}' is not supported.`);
+      const response = await fetch('/api/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code,
+          language,
+          input,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to execute code');
       }
+
+      const result = await response.json();
+      
+      // Combine output and error messages
+      const combinedOutput = [
+        ...(result.output || []).filter((line: string) => line.trim() !== ''),
+        ...(result.error || []).filter((line: string) => line.trim() !== '').map((line: string) => `Error: ${line}`)
+      ];
+      
+      setOutput(combinedOutput.length > 0 ? combinedOutput : ['Code executed successfully.']);
     } catch (error: any) {
-      capturedLogs.push(`Error: ${error.message}`);
+      console.error('Execution error:', error);
+      setOutput([`Error: ${error.message || 'Failed to execute code'}`]);
       toast({
         variant: "destructive",
         title: "Execution Error",
-        description: error.message,
+        description: error.message || 'Failed to execute code',
       });
-    } finally {
-      setOutput(capturedLogs);
-      console.log = oldLog;
     }
   };
 
@@ -140,10 +116,23 @@ export default function Home() {
   };
 
   const handleNewFile = () => {
-    setCode("");
+    setCode(getSnippetForLanguage("javascript"));
     setLanguage("javascript");
     setOutput([]);
+    setInput("");
     setActiveFile(null);
+  };
+
+  const handleClearInput = () => {
+    setInput("");
+  };
+
+  const handleLanguageChange = (newLanguage: string) => {
+    setLanguage(newLanguage);
+    // Always load snippet when switching languages (unless there's an active file)
+    if (!activeFile) {
+      setCode(getSnippetForLanguage(newLanguage));
+    }
   };
   
   const handleDetectLanguage = async () => {
@@ -160,11 +149,25 @@ export default function Home() {
       const result = await detectLanguageAction({ code });
       if (result && result.language) {
         const detectedLang = result.language.toLowerCase().split(' ')[0];
-        const supportedLangs = ["javascript", "python", "html", "css", "typescript", "json"];
-        if(supportedLangs.includes(detectedLang)) {
-          setLanguage(detectedLang);
+        const supportedLangs = [
+          "javascript", "typescript", "python", "java", "c", "c++", "c#", 
+          "go", "rust", "php", "ruby", "kotlin", "r", "bash"
+        ];
+        
+        // Handle common language variations
+        let normalizedLang = detectedLang;
+        if (detectedLang === "js") normalizedLang = "javascript";
+        if (detectedLang === "ts") normalizedLang = "typescript";
+        if (detectedLang === "py") normalizedLang = "python";
+        if (detectedLang === "cpp" || detectedLang === "cxx") normalizedLang = "c++";
+        if (detectedLang === "csharp") normalizedLang = "c#";
+        if (detectedLang === "golang") normalizedLang = "go";
+        if (detectedLang === "shell" || detectedLang === "sh") normalizedLang = "bash";
+        
+        if(supportedLangs.includes(normalizedLang)) {
+          setLanguage(normalizedLang);
         } else {
-            setLanguage("plaintext");
+          setLanguage("javascript"); // Default to JavaScript instead of plaintext
         }
       } else {
         throw new Error("Could not determine language.");
@@ -189,19 +192,45 @@ export default function Home() {
         onRun={handleRunCode}
         activeFile={activeFile}
       />
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 overflow-hidden">
-        <div className="flex flex-col min-h-0 min-w-0">
+      {/* Mobile Layout - Tab Switching */}
+      <main className="flex-1 lg:hidden p-4 overflow-hidden">
+        <MobileTabs
+          code={code}
+          onCodeChange={setCode}
+          language={language}
+          onLanguageChange={handleLanguageChange}
+          onDetectLanguage={handleDetectLanguage}
+          isDetecting={isDetecting}
+          input={input}
+          onInputChange={setInput}
+          onClearInput={handleClearInput}
+          output={output}
+        />
+      </main>
+
+      {/* Desktop Layout - Side by Side */}
+      <main className="hidden lg:grid lg:grid-cols-3 gap-4 p-4 overflow-hidden flex-1">
+        <div className="flex flex-col min-h-0 min-w-0 lg:col-span-2">
           <Editor
             code={code}
             onCodeChange={setCode}
             language={language}
-            onLanguageChange={setLanguage}
+            onLanguageChange={handleLanguageChange}
             onDetectLanguage={handleDetectLanguage}
             isDetecting={isDetecting}
           />
         </div>
-        <div className="flex flex-col min-h-0 min-w-0">
-          <OutputConsole output={output} />
+        <div className="flex flex-col gap-4 min-h-0 min-w-0">
+          <div className="flex-1">
+            <InputPanel
+              input={input}
+              onInputChange={setInput}
+              onClearInput={handleClearInput}
+            />
+          </div>
+          <div className="flex-1">
+            <OutputConsole output={output} />
+          </div>
         </div>
       </main>
 
