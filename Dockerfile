@@ -67,7 +67,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Production stage
 FROM node:20-alpine as production
 
-# Install runtime dependencies only
+# Install runtime dependencies
 RUN apk add --no-cache \
     python3 \
     openjdk17-jdk \
@@ -75,13 +75,19 @@ RUN apk add --no-cache \
     g++ \
     php \
     ruby \
-    R
+    R \
+    bash \
+    musl-dev \
+    libc6-compat
 
 # Copy language binaries from runtime-installer
 COPY --from=runtime-installer /usr/local/go /usr/local/go
 COPY --from=runtime-installer /root/.cargo /root/.cargo
 COPY --from=runtime-installer /opt/kotlinc /opt/kotlinc
 COPY --from=runtime-installer /usr/share/dotnet /usr/share/dotnet
+
+# Install TypeScript globally
+RUN npm install -g typescript tsx
 
 # Set environment variables
 ENV PATH=$PATH:/usr/local/go/bin:/root/.cargo/bin:/opt/kotlinc/bin:/usr/share/dotnet

@@ -35,8 +35,8 @@ const languageConfigs: Record<string, LanguageConfig> = {
   },
   typescript: {
     extension: '.ts',
-    command: 'npx',
-    args: (filePath: string) => ['tsx', filePath],
+    command: 'tsx',
+    args: (filePath: string) => [filePath],
   },
   python: {
     extension: '.py',
@@ -147,7 +147,7 @@ function executeCommand(command: string, args: string[], cwd?: string, input?: s
       if (error.message.includes('ENOENT')) {
         resolve({ 
           stdout, 
-          stderr: `Command '${command}' not found. Please install the required language compiler/interpreter.`, 
+          stderr: `Error: Command '${command}' not found. This language runtime may not be installed on the server.\nAvailable commands: node, python3, java, gcc, g++, php, ruby, tsx, go, rustc, kotlinc, dotnet, bash, Rscript`, 
           exitCode: 127 
         });
       } else {
